@@ -21,6 +21,7 @@ const passwordReducer = (state, action) => {
   if (action.type === "PASSWORD_BLUR") {
     return { value: state.value, isValid: state.isValid };
   }
+  return { value: "", isValid: false };
 };
 
 const Login = (props) => {
