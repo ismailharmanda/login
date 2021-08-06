@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useReducer, useContext } from "react";
+import React, {
+  useState,
+  useEffect,
+  useReducer,
+  useContext,
+  useRef,
+} from "react";
 
 import Card from "../UI/Card/Card";
 import Button from "../UI/Button/Button";
@@ -28,6 +34,8 @@ const passwordReducer = (state, action) => {
 
 const Login = () => {
   const ctx = useContext(AuthContext);
+  const emailInputRef = useRef();
+  const passwordInputRef = useRef();
   const [formIsValid, setFormIsValid] = useState(false);
 
   const [emailState, dispatchEmail] = useReducer(emailReducer, {
@@ -39,15 +47,15 @@ const Login = () => {
     isValid: undefined,
   });
   const { isValid: isEmailValid } = emailState;
-  const { isValid: isPawwordValid } = passwordState;
+  const { isValid: isPasswordValid } = passwordState;
   useEffect(() => {
     const indentifier = setTimeout(() => {
-      setFormIsValid(isEmailValid && isPawwordValid);
+      setFormIsValid(isEmailValid && isPasswordValid);
     }, 500);
     return () => {
       clearTimeout(indentifier);
     };
-  }, [isEmailValid, isPawwordValid]);
+  }, [isEmailValid, isPasswordValid]);
 
   const emailChangeHandler = (event) => {
     dispatchEmail({ type: "USER_INPUT", val: event.target.value });
@@ -70,13 +78,20 @@ const Login = () => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    ctx.onLogin(emailState.value, passwordState.value);
+    if (formIsValid) {
+      ctx.onLogin(emailState.value, passwordState.value);
+    } else if (!isEmailValid) {
+      emailInputRef.current.focus();
+    } else {
+      passwordInputRef.current.focus();
+    }
   };
 
   return (
     <Card className={classes.login}>
       <form onSubmit={submitHandler}>
         <Input
+          ref={emailInputRef}
           isValid={isEmailValid}
           label="E-mail"
           type="email"
@@ -86,7 +101,8 @@ const Login = () => {
           onBlur={validateEmailHandler}
         />
         <Input
-          isValid={isPawwordValid}
+          ref={passwordInputRef}
+          isValid={isPasswordValid}
           label="Password"
           type="password"
           id="password"
@@ -95,7 +111,7 @@ const Login = () => {
           onBlur={validatePasswordHandler}
         />
         <div className={classes.actions}>
-          <Button type="submit" className={classes.btn} disabled={!formIsValid}>
+          <Button type="submit" className={classes.btn}>
             Login
           </Button>
         </div>
